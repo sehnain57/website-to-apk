@@ -206,10 +206,12 @@ function config(){
 }
 
 function makeIcon(name,bg,fg){ return new Promise(res => {
-  const c = document.createElement("canvas"); c.width = c.height = 192; const x = c.getContext("2d");
-  const done = () => res(c.toDataURL("image/png").split(",")[1]);
-  if(iconData){ const im = new Image(); im.onload = () => { const s = Math.min(im.width,im.height); x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,192,192); done(); }; im.src = iconData; }
-  else { x.fillStyle = bg; x.fillRect(0,0,192,192); x.fillStyle = fg; x.font = "bold 110px system-ui,sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText((name[0]||"A").toUpperCase(),96,102); done(); }
+  const SZ = 144;
+  const c = document.createElement("canvas"); c.width = c.height = SZ; const x = c.getContext("2d");
+  // Use JPEG — much smaller than PNG for photographic logos
+  const done = () => res(c.toDataURL("image/jpeg", 0.85).split(",")[1]);
+  if(iconData){ const im = new Image(); im.onload = () => { const s = Math.min(im.width,im.height); x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,SZ,SZ); done(); }; im.src = iconData; }
+  else { x.fillStyle = bg; x.fillRect(0,0,SZ,SZ); x.fillStyle = fg; x.font = "bold " + Math.round(SZ*0.57) + "px system-ui,sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText((name[0]||"A").toUpperCase(),SZ/2,SZ*0.53); done(); }
 }); }
 
 function step(n){ [...$("steps").children].forEach((li,i) => li.className = i < n ? "done" : i === n ? "on" : ""); }
