@@ -24,6 +24,7 @@ jobs:
           ICON: ${{ inputs.icon_b64 }}
         run: |
           T=template/app/src/main
+          mkdir -p $T/assets $T/res/mipmap-xxxhdpi $T/res/drawable-nodpi
           printf '%s' "$CONFIG" > $T/assets/config.json
           python3 -c "import json;json.load(open('$T/assets/config.json'))"
           printf '%s' "$ICON" | base64 -d > $T/res/mipmap-xxxhdpi/ic_launcher.png
