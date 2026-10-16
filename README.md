@@ -7,4 +7,4 @@
 5. Open the builder, fill in the form, paste repo + token, click **Build APK**. ~3-5 min later you get the download link.
 
 Optional secrets for a permanent signing key (needed to update an app over a previous install): `KS_B64` (base64 of your .jks), `KS_PASS`, `KS_ALIAS`.
-Use AdMob test IDs while testing. Banner shows at the bottom; interstitial every 4th page load. No App ID = no ads.
+Ads (all optional, blank = skipped): banner, interstitial (every 4th page), rewarded interstitial (every 7th page, asks first), rewarded (floating Watch ad button), native advanced (dismissible card), app open (after splash and on return to app). Use the "Fill Google test IDs" button while testing.

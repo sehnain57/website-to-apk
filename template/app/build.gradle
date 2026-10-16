@@ -11,6 +11,7 @@ android {
         versionCode (cfg.versionCode as int)
         versionName cfg.versionName
         resValue 'string', 'app_name', cfg.name
+        resValue 'color', 'splash_bg', cfg.splash.background
         manifestPlaceholders = [admobAppId: (cfg.admob ? cfg.admob.appId : 'ca-app-pub-3940256099942544~3347511713')]
     }
     signingConfigs {

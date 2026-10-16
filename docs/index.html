@@ -29,6 +29,8 @@ input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-rad
 button{background:var(--accent);color:var(--accent-t);border:0;border-radius:10px;padding:12px 18px;font:600 15px inherit;cursor:pointer;width:100%}
 button:disabled{opacity:.5;cursor:default}
 button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);margin-top:8px}
+.dlb{display:none;padding:11px 16px;border-radius:9px;background:var(--accent);color:var(--accent-t);font-weight:600;text-decoration:none}
+.dlb.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
 .err{color:#dc2626;font-size:13px;margin-top:8px;min-height:18px}
 .bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin:10px 0}
 .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
@@ -89,7 +91,16 @@ button.ghost{background:transparent;color:var(--text);border:1px solid var(--lin
           <input type="text" id="admobBanner" placeholder="ca-app-pub-xxx/yyy">
           <label>Interstitial ad unit ID <small>(optional)</small></label>
           <input type="text" id="admobInter" placeholder="ca-app-pub-xxx/yyy">
-          <div class="hint">Without an App ID, ads are not added at all (a wrong App ID would crash the app, so it's required).</div>
+          <label>Rewarded interstitial ad unit ID <small>(optional)</small></label>
+          <input type="text" id="admobRI" placeholder="ca-app-pub-xxx/yyy">
+          <label>Rewarded ad unit ID <small>(optional, floating "Watch ad" button)</small></label>
+          <input type="text" id="admobRw" placeholder="ca-app-pub-xxx/yyy">
+          <label>Native advanced ad unit ID <small>(optional)</small></label>
+          <input type="text" id="admobNative" placeholder="ca-app-pub-xxx/yyy">
+          <label>App open ad unit ID <small>(optional)</small></label>
+          <input type="text" id="admobOpen" placeholder="ca-app-pub-xxx/yyy">
+          <button class="ghost" type="button" id="testIds">Fill Google test IDs (for testing)</button>
+          <div class="hint">Leave any ad unit ID empty to skip that format. Without an App ID, ads are not added at all (a wrong App ID would crash the app, so it's required).</div>
         </div>
       </div>
 
@@ -111,7 +122,10 @@ button.ghost{background:transparent;color:var(--text);border:1px solid var(--lin
         <h2 id="stTitle">Building…</h2>
         <div class="bar"><i id="stBar"></i></div>
         <div id="stMsg" class="hint"></div>
-        <a id="stLink" style="display:none;margin-top:10px;color:var(--ok);font-weight:600" href="#">Download APK</a>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <a id="stLink" class="dlb" href="#">⬇ Download APK</a>
+          <a id="stLink2" class="dlb alt" href="#">⬇ Download source code (ZIP)</a>
+        </div>
       </div>
     </div>
 
@@ -173,7 +187,7 @@ function config(){
     versionName: $("vname").value.trim() || "1.0.0",
     versionCode: parseInt($("vcode").value) || 1,
     splash: { background: $("bg").value, textColor: $("fg").value, durationMs: +$("dur").value, showName: $("showName").value === "1", useLogo: !!iconFile },
-    admob: useAds ? { appId, banner: $("admobBanner").value.trim() || null, interstitial: $("admobInter").value.trim() || null } : null
+    admob: useAds ? { appId, banner: $("admobBanner").value.trim() || null, interstitial: $("admobInter").value.trim() || null, rewardedInterstitial: $("admobRI").value.trim() || null, rewarded: $("admobRw").value.trim() || null, native: $("admobNative").value.trim() || null, appOpen: $("admobOpen").value.trim() || null } : null
   };
 }
 
@@ -204,7 +218,7 @@ $("build").onclick = async () => {
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const H = {Authorization:"Bearer "+token, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"};
   const api = "https://api.github.com/repos/" + repo;
-  $("build").disabled = true; $("status").style.display = "block"; $("stLink").style.display = "none";
+  $("build").disabled = true; $("status").style.display = "block"; $("stLink").style.display = $("stLink2").style.display = "none";
   $("stTitle").textContent = "Building…"; $("stBar").style.width = "5%"; $("stMsg").textContent = "Starting build…";
   try{
     const icon = await makeIcon(cfg.name, cfg.splash.background, cfg.splash.textColor);
@@ -224,11 +238,20 @@ $("build").onclick = async () => {
         if(run.conclusion !== "success") throw new Error("Build failed. Logs: " + run.html_url);
         $("stBar").style.width = "100%"; $("stTitle").textContent = "APK ready";
         $("stLink").href = "https://github.com/" + repo + "/releases/download/build-" + id + "/app.apk";
-        $("stLink").style.display = "inline-block"; break;
+        $("stLink2").href = "https://github.com/" + repo + "/releases/download/build-" + id + "/source.zip";
+        $("stLink").style.display = $("stLink2").style.display = "inline-block"; break;
       }
     }
   }catch(e){ $("stTitle").textContent = "Build failed"; $("err").textContent = e.message; }
   $("build").disabled = false;
+};
+$("testIds").onclick = () => {
+  const t = "ca-app-pub-3940256099942544/";
+  $("admobApp").value = "ca-app-pub-3940256099942544~3347511713";
+  $("admobBanner").value = t + "9214589741"; $("admobInter").value = t + "1033173712";
+  $("admobRI").value = t + "5354046379"; $("admobRw").value = t + "5224354917";
+  $("admobNative").value = t + "2247696110"; $("admobOpen").value = t + "9257395921";
+  preview();
 };
 preview();
 </script>
