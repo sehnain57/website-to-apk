@@ -280,16 +280,16 @@ public class MainActivity extends Activity {
     }
 
     // App open (cold start after splash, and when returning to the app)
-    private void loadOpen() {
-        if (openId.isEmpty()) return;
-        AppOpenAd.load(this, openId, req(), new AppOpenAdLoadCallback() {
-            @Override public void onAdLoaded(AppOpenAd a) {
-                open = a; openLoaded = SystemClock.elapsedRealtime();
-                if (coldPending && splashGone && SystemClock.elapsedRealtime() - startTime < 20000) maybeShowOpen();
-            }
-            @Override public void onAdFailedToLoad(LoadAdError e) { open = null; }
-        });
-    }
+private void loadOpen() {
+    if (openId.isEmpty()) return;
+    AppOpenAd.load(this, openId, req(), new AppOpenAd.AppOpenAdLoadCallback() {
+        @Override public void onAdLoaded(AppOpenAd a) {
+            open = a; openLoaded = SystemClock.elapsedRealtime();
+            if (coldPending && splashGone && SystemClock.elapsedRealtime() - startTime < 20000) maybeShowOpen();
+        }
+        @Override public void onAdFailedToLoad(LoadAdError e) { open = null; }
+    });
+}
     private void maybeShowOpen() {
         if (open == null || busy || !splashGone) return;
         long now = SystemClock.elapsedRealtime();
