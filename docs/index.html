@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebToAPK Builder</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#14161f;--muted:#6b7080;--line:#e2e4ee;--accent:#4f46e5;--accent-t:#fff;--ok:#16a34a}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1017;--card:#171a24;--text:#eceef6;--muted:#8d93a8;--line:#2a2e3d;--accent:#818cf8;--accent-t:#0e1017;--ok:#4ade80}}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:1000px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:30px;margin:0 0 4px}.sub{color:var(--muted);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:1fr 300px;gap:20px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.card h2{font-size:16px;margin:0 0 14px}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+label small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=password],input[type=url],input[type=number],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);font:inherit}
+input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:3px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px}
+.drop img{max-width:64px;max-height:64px;border-radius:12px;display:block;margin:0 auto 6px}
+.switch{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+#admobFields{display:none}
+button{background:var(--accent);color:var(--accent-t);border:0;border-radius:10px;padding:12px 18px;font:600 15px inherit;cursor:pointer;width:100%}
+button:disabled{opacity:.5;cursor:default}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);margin-top:8px}
+.err{color:#dc2626;font-size:13px;margin-top:8px;min-height:18px}
+.bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+#status{display:none}
+.phone{position:sticky;top:16px;width:230px;height:440px;margin:0 auto;border:8px solid #222;border-radius:30px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:background .2s}
+.phone img,.phone .ph{width:84px;height:84px;border-radius:20px;object-fit:cover;background:rgba(128,128,128,.25);display:grid;place-items:center;font-size:30px}
+.phone b{font-size:18px;text-align:center;padding:0 12px}
+.ad{position:absolute;bottom:0;left:0;right:0;background:#ddd;color:#333;font-size:10px;text-align:center;padding:10px;display:none}
+.pw{position:sticky;top:16px}
+.cap{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Website → APK</h1>
+  <p class="sub">Turn any website into an Android app with a splash screen and optional AdMob ads.</p>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1. App details</h2>
+        <label>Website URL *</label>
+        <input type="url" id="url" placeholder="https://example.com">
+        <label>App name * <small>(max 30)</small></label>
+        <input type="text" id="name" maxlength="30" placeholder="My App">
+        <label>Package name <small>(optional, auto-generated if empty)</small></label>
+        <input type="text" id="pkg" placeholder="com.example.myapp">
+        <div class="row">
+          <div><label>Version name</label><input type="text" id="vname" value="1.0.0"></div>
+          <div><label>Version code</label><input type="number" id="vcode" value="1" min="1"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Logo &amp; splash screen</h2>
+        <label>Logo <small>(used for launcher icon + splash)</small></label>
+        <div class="drop" id="drop"><span id="dropTxt">Click or drop PNG/JPG (max 5 MB)</span></div>
+        <input type="file" id="file" accept="image/png,image/jpeg" hidden>
+        <div class="row">
+          <div><label>Splash background</label><input type="color" id="bg" value="#4f46e5"></div>
+          <div><label>Text colour</label><input type="color" id="fg" value="#ffffff"></div>
+        </div>
+        <div class="row">
+          <div><label>Duration</label>
+            <select id="dur"><option value="1500">1.5 s</option><option value="2500" selected>2.5 s</option><option value="3500">3.5 s</option></select></div>
+          <div><label>Show app name</label>
+            <select id="showName"><option value="1" selected>Yes</option><option value="0">No</option></select></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. AdMob <small style="font-weight:400;color:var(--muted)">(optional)</small></h2>
+        <label class="switch"><input type="checkbox" id="admobOn"> Enable AdMob ads</label>
+        <div class="hint">Leave off, or leave the IDs empty, and ads are skipped completely.</div>
+        <div id="admobFields">
+          <label>AdMob App ID <small>ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY</small></label>
+          <input type="text" id="admobApp" placeholder="ca-app-pub-3940256099942544~3347511713">
+          <label>Banner ad unit ID <small>(optional)</small></label>
+          <input type="text" id="admobBanner" placeholder="ca-app-pub-xxx/yyy">
+          <label>Interstitial ad unit ID <small>(optional)</small></label>
+          <input type="text" id="admobInter" placeholder="ca-app-pub-xxx/yyy">
+          <div class="hint">Without an App ID, ads are not added at all (a wrong App ID would crash the app, so it's required).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Build settings <small style="font-weight:400;color:var(--muted)">(free, runs on GitHub Actions)</small></h2>
+        <label>Your public GitHub repo <small>owner/name</small></label>
+        <input type="text" id="repo" placeholder="yourname/webtoapk">
+        <label>GitHub token <small>fine-grained: Actions read &amp; write, Contents read &amp; write. Stays in your browser.</small></label>
+        <input type="password" id="token" placeholder="github_pat_...">
+        <label>Branch</label>
+        <input type="text" id="ref" value="main">
+      </div>
+
+      <button id="build">Build APK →</button>
+      <button class="ghost" id="dl">Download build-config.json only</button>
+      <div class="err" id="err"></div>
+
+      <div class="card" id="status">
+        <h2 id="stTitle">Building…</h2>
+        <div class="bar"><i id="stBar"></i></div>
+        <div id="stMsg" class="hint"></div>
+        <a id="stLink" style="display:none;margin-top:10px;color:var(--ok);font-weight:600" href="#">Download APK</a>
+      </div>
+    </div>
+
+    <div class="pw">
+      <div class="phone" id="phone" style="position:relative;background:#4f46e5;color:#fff">
+        <div class="ph" id="pLogo">📱</div>
+        <b id="pName">My App</b>
+        <div class="ad" id="pAd">AdMob banner (shown if enabled)</div>
+      </div>
+      <div class="cap">Live splash screen preview</div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const $ = id => document.getElementById(id);
+let iconFile = null, iconData = "";
+
+function preview(){
+  $("phone").style.background = $("bg").value;
+  $("phone").style.color = $("fg").value;
+  $("pName").textContent = $("name").value || "My App";
+  $("pName").style.display = $("showName").value === "1" ? "" : "none";
+  $("pAd").style.display = ($("admobOn").checked && $("admobBanner").value.trim()) ? "block" : "none";
+}
+["bg","fg","name","showName","admobOn","admobBanner"].forEach(i => $(i).addEventListener("input", preview));
+$("admobOn").addEventListener("change", () => { $("admobFields").style.display = $("admobOn").checked ? "block" : "none"; preview(); });
+
+$("drop").onclick = () => $("file").click();
+$("drop").ondragover = e => e.preventDefault();
+$("drop").ondrop = e => { e.preventDefault(); setIcon(e.dataTransfer.files[0]); };
+$("file").onchange = e => setIcon(e.target.files[0]);
+function setIcon(f){
+  if(!f) return;
+  if(!/^image\/(png|jpeg)$/.test(f.type)) return ($("err").textContent = "Logo must be PNG or JPG.");
+  if(f.size > 5*1024*1024) return ($("err").textContent = "Logo must be under 5 MB.");
+  $("err").textContent = ""; iconFile = f;
+  const r = new FileReader();
+  r.onload = () => { iconData = r.result;
+    $("pLogo").outerHTML = '<img id="pLogo" src="'+iconData+'">';
+    $("dropTxt").textContent = f.name; };
+  r.readAsDataURL(f);
+}
+
+function config(){
+  const url = $("url").value.trim(), name = $("name").value.trim();
+  if(!/^https?:\/\/.+\..+/.test(url)) throw "Enter a valid website URL (https://...).";
+  if(!name) throw "App name is required.";
+  if(/[<>&"'\\]/.test(name)) throw "App name cannot contain < > & \" ' or backslash.";
+  let pkg = $("pkg").value.trim().toLowerCase();
+  if(pkg && !/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(pkg)) throw "Invalid package name. Use format com.example.app";
+  if(!pkg) pkg = "com.webtoapk." + (name.toLowerCase().replace(/[^a-z0-9]/g,"") || "app") + Math.floor(Math.random()*9999);
+  const appId = $("admobApp").value.trim();
+  const useAds = $("admobOn").checked && /^ca-app-pub-\d{16}~\d{10}$/.test(appId);
+  if($("admobOn").checked && appId && !useAds) throw "AdMob App ID format is invalid.";
+  return {
+    url, name, package: pkg,
+    versionName: $("vname").value.trim() || "1.0.0",
+    versionCode: parseInt($("vcode").value) || 1,
+    splash: { background: $("bg").value, textColor: $("fg").value, durationMs: +$("dur").value, showName: $("showName").value === "1", useLogo: !!iconFile },
+    admob: useAds ? { appId, banner: $("admobBanner").value.trim() || null, interstitial: $("admobInter").value.trim() || null } : null
+  };
+}
+
+$("dl").onclick = () => {
+  try{ $("err").textContent = "";
+    const blob = new Blob([JSON.stringify(config(),null,2)],{type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "build-config.json"; a.click();
+  }catch(e){ $("err").textContent = e; }
+};
+
+const LS=k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}}, SS=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+$("repo").value=LS("w2a_repo"); $("token").value=LS("w2a_token");
+if(!$("repo").value && location.hostname.endsWith("github.io")){ const p=location.pathname.split("/")[1]; if(p) $("repo").value=location.hostname.split(".")[0]+"/"+p; }
+
+function makeIcon(name,bg,fg){ return new Promise(res=>{
+  const c=document.createElement("canvas"); c.width=c.height=192; const x=c.getContext("2d");
+  const done=()=>res(c.toDataURL("image/png").split(",")[1]);
+  if(iconData){ const im=new Image(); im.onload=()=>{ const s=Math.min(im.width,im.height); x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,192,192); done(); }; im.src=iconData; }
+  else { x.fillStyle=bg; x.fillRect(0,0,192,192); x.fillStyle=fg; x.font="bold 110px system-ui,sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText((name[0]||"A").toUpperCase(),96,102); done(); }
+}); }
+
+$("build").onclick = async () => {
+  let cfg; $("err").textContent = "";
+  try{ cfg = config(); }catch(e){ return $("err").textContent = e; }
+  const repo=$("repo").value.trim(), token=$("token").value.trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) return $("err").textContent = "Fill in the GitHub repo and token in section 4.";
+  SS("w2a_repo",repo); SS("w2a_token",token);
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const H = {Authorization:"Bearer "+token, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"};
+  const api = "https://api.github.com/repos/" + repo;
+  $("build").disabled = true; $("status").style.display = "block"; $("stLink").style.display = "none";
+  $("stTitle").textContent = "Building…"; $("stBar").style.width = "5%"; $("stMsg").textContent = "Starting build…";
+  try{
+    const icon = await makeIcon(cfg.name, cfg.splash.background, cfg.splash.textColor);
+    const r = await fetch(api + "/actions/workflows/build.yml/dispatches", {method:"POST", headers:H,
+      body: JSON.stringify({ref: $("ref").value.trim() || "main", inputs:{build_id:id, config:JSON.stringify(cfg), icon_b64:icon}})});
+    if(r.status !== 204) throw new Error("GitHub replied " + r.status + ": " + (await r.text()).slice(0,200));
+    const t0 = Date.now();
+    while(true){
+      await new Promise(r => setTimeout(r, 5000));
+      const el = (Date.now() - t0) / 1000;
+      $("stBar").style.width = Math.min(92, 5 + el/2.2) + "%";
+      const d = await (await fetch(api + "/actions/runs?event=workflow_dispatch&per_page=15", {headers:H})).json();
+      const run = (d.workflow_runs || []).find(w => (w.display_title || w.name || "").includes(id));
+      if(!run){ $("stMsg").textContent = "Waiting for GitHub to start…"; if(el > 120) throw new Error("Run not found. Check build.yml exists and the token has Actions access."); continue; }
+      $("stMsg").textContent = "Status: " + run.status + " · " + Math.round(el) + "s";
+      if(run.status === "completed"){
+        if(run.conclusion !== "success") throw new Error("Build failed. Logs: " + run.html_url);
+        $("stBar").style.width = "100%"; $("stTitle").textContent = "APK ready";
+        $("stLink").href = "https://github.com/" + repo + "/releases/download/build-" + id + "/app.apk";
+        $("stLink").style.display = "inline-block"; break;
+      }
+    }
+  }catch(e){ $("stTitle").textContent = "Build failed"; $("err").textContent = e.message; }
+  $("build").disabled = false;
+};
+preview();
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+import groovy.json.JsonSlurper
+plugins { id 'com.android.application' }
+def cfg = new JsonSlurper().parse(file('src/main/assets/config.json'))
+android {
+    namespace 'com.webtoapk.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId cfg.package
+        minSdk 21
+        targetSdk 34
+        versionCode (cfg.versionCode as int)
+        versionName cfg.versionName
+        resValue 'string', 'app_name', cfg.name
+        manifestPlaceholders = [admobAppId: (cfg.admob ? cfg.admob.appId : 'ca-app-pub-3940256099942544~3347511713')]
+    }
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('KS_FILE') ?: 'none.jks')
+            storePassword System.getenv('KS_PASS')
+            keyAlias System.getenv('KS_ALIAS') ?: 'key'
+            keyPassword System.getenv('KS_PASS')
+        }
+    }
+    buildTypes { release { signingConfig signingConfigs.release; minifyEnabled false } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    lint { abortOnError false; checkReleaseBuilds false }
+}
+dependencies { implementation 'com.google.android.gms:play-services-ads:23.2.0' }
