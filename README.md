@@ -1,10 +1,18 @@
-# WebToAPK (free, no server)
+# WebToAPK (free, public)
 
-1. Create a **public** GitHub repo and upload everything in this folder.
-2. Settings → Pages → deploy from branch `main`, folder `/docs`. Your builder is at `https://USER.github.io/REPO/`.
-3. Settings → Actions → General → Workflow permissions → **Read and write**.
-4. Create a fine-grained token for that repo: Actions (read/write), Contents (read/write).
-5. Open the builder, fill in the form, paste repo + token, click **Build APK**. ~3-5 min later you get the download link.
+Browser form -> Cloudflare Worker (holds the GitHub token) -> GitHub Actions build -> Release with app.apk + source.zip.
 
-Optional secrets for a permanent signing key (needed to update an app over a previous install): `KS_B64` (base64 of your .jks), `KS_PASS`, `KS_ALIAS`.
-Ads (all optional, blank = skipped): banner, interstitial (every 4th page), rewarded interstitial (every 7th page, asks first), rewarded (floating Watch ad button), native advanced (dismissible card), app open (after splash and on return to app). Use the "Fill Google test IDs" button while testing.
+## Deploy the public API (Cloudflare, free, ~5 min)
+1. Create a NEW fine-grained GitHub token: only repo `website-to-apk`, permissions **Actions: Read and write** (nothing else).
+2. cloudflare.com -> Workers & Pages -> Create -> Worker -> name it `webtoapk-api` -> Deploy -> Edit code -> paste `worker/worker.js` -> Deploy.
+3. Worker -> Settings -> Variables and Secrets:
+   - Secret `GH_TOKEN` = your new token
+   - Text `REPO` = sehnain57/website-to-apk
+   - Text `REF` = main
+   - Text `ALLOWED_ORIGIN` = https://sehnain57.github.io
+   - Text `MAX_PER_HOUR` = 5 (optional), `BLOCKED_DOMAINS` = comma list (optional)
+4. Optional rate limit: Storage & Databases -> KV -> create namespace -> Worker -> Bindings -> add KV binding named `RATE`.
+5. Copy the worker URL (https://webtoapk-api.<you>.workers.dev) into `const WORKER = ""` in `docs/index.html`, commit.
+
+Old builds are deleted after 7 days by `.github/workflows/cleanup.yml`.
+Optional permanent signing key: repo secrets `KS_B64`, `KS_PASS`, `KS_ALIAS`.

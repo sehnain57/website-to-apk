@@ -1,0 +1,18 @@
+name: Cleanup old builds
+on:
+  schedule: [{ cron: "0 3 * * *" }]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete releases older than 7 days
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release list -R "$REPO" --limit 300 --json tagName,createdAt \
+            -q '.[] | select(.createdAt < (now - 604800 | todate)) | .tagName' |
+          while read -r t; do gh release delete "$t" --cleanup-tag -y -R "$REPO"; done

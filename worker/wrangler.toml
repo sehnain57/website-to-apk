@@ -1,0 +1,14 @@
+# Optional: only needed if you deploy with the Wrangler CLI. The dashboard route needs no file.
+name = "webtoapk-api"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+REPO = "sehnain57/website-to-apk"
+REF = "main"
+ALLOWED_ORIGIN = "https://sehnain57.github.io"
+MAX_PER_HOUR = "5"
+BLOCKED_DOMAINS = ""
+
+# kv_namespaces = [{ binding = "RATE", id = "PASTE_KV_ID" }]
+# Add the secret with:  npx wrangler secret put GH_TOKEN

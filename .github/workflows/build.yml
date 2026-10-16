@@ -1,4 +1,3 @@
-# trigger
 name: Build APK
 run-name: build ${{ inputs.build_id }}
 on:
